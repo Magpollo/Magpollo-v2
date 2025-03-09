@@ -1,0 +1,296 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 240 10% 3.9%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 240 10% 3.9%;
+
+    --popover: 0 0% 100%;
+    --popover-foreground: 240 10% 3.9%;
+
+    --primary: 349 89% 60%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 4.8% 95.9%;
+    --secondary-foreground: 240 5.9% 10%;
+
+    --muted: 240 4.8% 95.9%;
+    --muted-foreground: 240 3.8% 46.1%;
+
+    --accent: 240 4.8% 95.9%;
+    --accent-foreground: 240 5.9% 10%;
+
+    --destructive: 0 84.2% 60.2%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 5.9% 90%;
+    --input: 240 5.9% 90%;
+    --ring: 349 89% 60%;
+
+    --radius: 0.75rem;
+
+    --dark: 240 6% 10%;
+    --magpollo: 349 89% 60%;
+    --magpollo-light: 349 100% 94%;
+    --magpollo-dark: 349 89% 40%;
+  }
+
+  .dark {
+    --background: 240 10% 3.9%;
+    --foreground: 0 0% 98%;
+
+    --card: 240 10% 3.9%;
+    --card-foreground: 0 0% 98%;
+
+    --popover: 240 10% 3.9%;
+    --popover-foreground: 0 0% 98%;
+
+    --primary: 349 89% 60%;
+    --primary-foreground: 0 0% 98%;
+
+    --secondary: 240 3.7% 15.9%;
+    --secondary-foreground: 0 0% 98%;
+
+    --muted: 240 3.7% 15.9%;
+    --muted-foreground: 240 5% 64.9%;
+
+    --accent: 240 3.7% 15.9%;
+    --accent-foreground: 0 0% 98%;
+
+    --destructive: 0 62.8% 30.6%;
+    --destructive-foreground: 0 0% 98%;
+
+    --border: 240 3.7% 15.9%;
+    --input: 240 3.7% 15.9%;
+    --ring: 349 89% 60%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  html {
+    scroll-behavior: smooth;
+  }
+
+  body {
+    @apply bg-background text-foreground font-sans antialiased;
+  }
+
+  h1, h2, h3, h4, h5, h6 {
+    @apply font-display tracking-tight;
+  }
+
+  /* Custom glass-morphism component */
+  .glass {
+    @apply bg-white/70 backdrop-blur-lg border border-white/20 shadow-glass;
+  }
+
+  .dark .glass {
+    @apply bg-black/60 backdrop-blur-lg border border-white/10;
+  }
+
+  /* Glass card */
+  .glass-card {
+    @apply bg-white/60 backdrop-blur-md border border-white/30 shadow-sm rounded-xl;
+  }
+
+  .dark .glass-card {
+    @apply bg-black/40 backdrop-blur-md border border-white/10;
+  }
+
+  /* Glass button */
+  .glass-button {
+    @apply bg-white/20 backdrop-blur-sm border border-white/40 hover:bg-white/30 transition-all;
+  }
+
+  .dark .glass-button {
+    @apply bg-white/10 border-white/20 hover:bg-white/20;
+  }
+
+  /* Color gradients */
+  .gradient-primary {
+    @apply bg-gradient-to-r from-[#CE4257] to-[#CE4257]/80;
+  }
+
+  .gradient-secondary {
+    @apply bg-gradient-to-r from-[#FFFCE4] to-[#FFFCE4]/70;
+  }
+
+  .gradient-dark {
+    @apply bg-gradient-to-r from-[#040F0F] to-[#040F0F]/80;
+  }
+
+  /* Hero background */
+  .hero-bg {
+    @apply bg-[#FFFCE4];
+  }
+
+  /* Dark footer */
+  .footer-dark {
+    @apply bg-[#040F0F] text-white;
+  }
+
+  /* Custom hover effect for cards */
+  .hover-lift {
+    @apply transition-all duration-300 ease-out;
+  }
+  
+  .hover-lift:hover {
+    @apply -translate-y-1 shadow-soft;
+  }
+
+  /* Gradient text utility */
+  .text-gradient {
+    @apply text-transparent bg-clip-text bg-gradient-to-r from-primary to-primary/70;
+  }
+
+  /* Add smooth scroll for anchors */
+  html {
+    scroll-behavior: smooth;
+  }
+
+  @media (prefers-reduced-motion) {
+    html {
+      scroll-behavior: auto;
+    }
+  }
+
+  /* Utility for image blur loading effect */
+  .blur-load {
+    background-size: cover;
+    background-position: center;
+  }
+
+  .blur-load.loaded > img {
+    opacity: 1;
+  }
+
+  .blur-load > img {
+    opacity: 0;
+    transition: opacity 200ms ease-in-out;
+  }
+
+  /* Custom scrollbar */
+  ::-webkit-scrollbar {
+    width: 8px;
+  }
+
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+
+  ::-webkit-scrollbar-thumb {
+    @apply bg-muted-foreground/20 rounded-full;
+  }
+
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/30;
+  }
+}
+
+/* Utility for animated underlines */
+.animated-underline {
+  position: relative;
+  text-decoration: none;
+}
+
+.animated-underline::after {
+  content: '';
+  position: absolute;
+  width: 100%;
+  transform: scaleX(0);
+  height: 2px;
+  bottom: -4px;
+  left: 0;
+  background-color: currentColor;
+  transform-origin: bottom right;
+  transition: transform 0.3s ease-out;
+}
+
+.animated-underline:hover::after {
+  transform: scaleX(1);
+  transform-origin: bottom left;
+}
+
+/* Import fonts */
+@import url('https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap');
+
+/* Custom styling */
+.slice-bg {
+  position: absolute;
+  height: 100%;
+  width: 100%;
+  left: 0;
+  top: 0;
+  z-index: -1;
+  overflow: hidden;
+}
+
+.slice {
+  position: absolute;
+  background: hsl(var(--magpollo) / 0.05);
+  transform: skewY(-6deg);
+  z-index: -1;
+}
+
+.slice-1 {
+  height: 140%;
+  width: 120vw;
+  left: -10vw;
+  top: -20%;
+}
+
+.slice-2 {
+  height: 140%;
+  width: 120vw;
+  left: -10vw;
+  top: 20%;
+  background: hsl(var(--magpollo) / 0.03);
+  transform: skewY(8deg);
+}
+
+.gradient-heading {
+  @apply text-transparent bg-clip-text bg-gradient-to-r from-magpollo to-magpollo-dark font-extrabold;
+}
+
+.gradient-bg-primary {
+  @apply bg-gradient-to-r from-magpollo to-magpollo-dark;
+}
+
+.pattern-dots {
+  background-color: hsl(var(--background));
+  background-image: radial-gradient(hsl(var(--primary) / 0.15) 1px, transparent 1px);
+  background-size: 20px 20px;
+}
+
+.card-hover {
+  @apply transition-all duration-300 hover:shadow-xl hover:-translate-y-1 hover:border-magpollo/20;
+}
+
+.icon-highlight {
+  @apply bg-magpollo-light text-magpollo rounded-xl flex items-center justify-center;
+}
+
+.section-title {
+  @apply flex flex-col items-center justify-center gap-2 mb-12 text-center;
+}
+
+.section-title .title-tag {
+  @apply px-4 py-1 bg-magpollo-light text-magpollo rounded-full text-sm font-medium tracking-wider uppercase;
+}
+
+.section-title h2 {
+  @apply text-3xl md:text-4xl lg:text-5xl font-bold tracking-tight mb-4;
+}
+
+.section-title p {
+  @apply text-lg text-muted-foreground max-w-2xl mx-auto;
+}

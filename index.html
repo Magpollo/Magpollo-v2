@@ -1,0 +1,87 @@
+<!DOCTYPE html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <title>Magpollo - From Concept to MVP in Weeks</title>
+    <meta name="description" content="We help non-technical founders and startups transform their ideas into functional MVPs that are ready for market validation.">
+    <meta name="keywords" content="MVP development, startup, non-technical founders, idea validation, product development">
+    
+    <!-- Preconnect to Google Fonts -->
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    
+    <!-- Preload fonts -->
+    <link rel="preload" as="style" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+    <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&display=swap">
+    
+    <!-- Social media meta tags -->
+    <meta property="og:title" content="Magpollo - From Concept to MVP in Weeks">
+    <meta property="og:description" content="We help non-technical founders and startups transform their ideas into functional MVPs that are ready for market validation.">
+    <meta property="og:type" content="website">
+    <meta property="og:url" content="https://magpollo.com">
+    
+    <!-- Theme color for browser UI -->
+    <meta name="theme-color" content="#ffffff">
+    
+    <style>
+      /* Apply custom fonts immediately to reduce layout shift */
+      body {
+        font-family: 'Plus Jakarta Sans', sans-serif;
+        background-color: #fff;
+        margin: 0;
+      }
+      
+      /* Simple loading screen */
+      .preload-spinner {
+        position: fixed;
+        top: 0;
+        left: 0;
+        width: 100%;
+        height: 100%;
+        background: #ffffff;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        z-index: 9999;
+        transition: opacity 0.3s, visibility 0.3s;
+      }
+      
+      .spinner {
+        width: 48px;
+        height: 48px;
+        border: 3px solid rgba(239, 68, 68, 0.1);
+        border-radius: 50%;
+        border-left-color: #ef4444;
+        animation: spin 1s linear infinite;
+      }
+      
+      @keyframes spin {
+        0% { transform: rotate(0deg); }
+        100% { transform: rotate(360deg); }
+      }
+      
+      .js-loaded .preload-spinner {
+        opacity: 0;
+        visibility: hidden;
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Loading spinner -->
+    <div class="preload-spinner">
+      <div class="spinner"></div>
+    </div>
+    
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+    
+    <script>
+      // Remove loading spinner when app is loaded
+      window.addEventListener('load', function() {
+        document.body.classList.add('js-loaded');
+      });
+    </script>
+  </body>
+</html>
