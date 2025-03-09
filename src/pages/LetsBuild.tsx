@@ -32,22 +32,22 @@ const ServiceCard = ({ service, selected, onClick }) => {
     <motion.div
       whileHover={{ scale: 1.02, boxShadow: '0 4px 20px rgba(0, 0, 0, 0.05)' }}
       whileTap={{ scale: 0.98 }}
-      className={`p-5 rounded-xl border transition-all duration-200 ${
+      className={`p-5 rounded-xl border transition-all duration-200 relative ${
         selected 
           ? 'bg-primary/10 border-primary text-primary shadow-sm' 
           : 'bg-gray-50/50 border-gray-100 hover:border-primary/30'
       } cursor-pointer`}
       onClick={onClick}
     >
-      <div className="flex justify-between items-start mb-3">
-        <h3 className="font-medium">{service.title}</h3>
-        <div className={`flex items-center justify-center min-w-[20px] min-h-[20px] w-5 h-5 rounded-full aspect-square flex-shrink-0 transition-colors ${
-          selected ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
-        }`}>
-          {selected ? <Check size={12} /> : <Plus size={12} />}
-        </div>
+      <div className="pr-6">
+        <h3 className="font-medium mb-3">{service.title}</h3>
+        <p className="text-sm text-muted-foreground">{service.description}</p>
       </div>
-      <p className="text-sm text-muted-foreground">{service.description}</p>
+      <div className={`absolute top-5 right-5 flex items-center justify-center w-5 h-5 min-w-[20px] min-h-[20px] rounded-full aspect-square ${
+        selected ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
+      }`}>
+        {selected ? <Check size={12} /> : <Plus size={12} />}
+      </div>
     </motion.div>
   );
 };
