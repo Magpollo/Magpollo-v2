@@ -41,7 +41,7 @@ const ServiceCard = ({ service, selected, onClick }) => {
     >
       <div className="flex justify-between items-start mb-3">
         <h3 className="font-medium">{service.title}</h3>
-        <div className={`flex items-center justify-center w-5 h-5 rounded-full transition-colors ${
+        <div className={`flex items-center justify-center min-w-[20px] min-h-[20px] w-5 h-5 rounded-full aspect-square flex-shrink-0 transition-colors ${
           selected ? 'bg-primary text-white' : 'bg-gray-200 text-gray-500 hover:bg-gray-300'
         }`}>
           {selected ? <Check size={12} /> : <Plus size={12} />}
