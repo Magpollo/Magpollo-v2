@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import Layout from '@/components/Layout';
 import AnimatedArrow from '@/components/AnimatedArrow';
 import { useToast } from '@/components/ui/use-toast';
-import { useForm } from '@formspree/react';
+import sendMail from '@/utils/sendMail';
 
 // Define the available services for selection
 const availableServices = [
@@ -236,9 +236,8 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
     message: ''
   });
   const [isSuccess, setIsSuccess] = useState(false);
+  const [isSubmitting, setIsSubmitting] = useState(false);
   
-  const [state, handleSubmit] = useForm("mjvdgwzb");
-
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
@@ -246,41 +245,38 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    setIsSubmitting(true);
     
-    // Create FormData object to handle files
-    const formDataToSend = new FormData();
-    
-    // Add form fields
-    formDataToSend.append('name', formData.name);
-    formDataToSend.append('email', formData.email);
-    formDataToSend.append('company', formData.company);
-    formDataToSend.append('message', formData.message);
-    
-    // Add selected services
-    formDataToSend.append('selectedServices', JSON.stringify(selectedServices.map(s => s.title)));
-    
-    // Add files
-    files.forEach((file, index) => {
-      formDataToSend.append(`file${index + 1}`, file);
-    });
-
     try {
-      await handleSubmit(formDataToSend);
-      
-      // Show success screen instead of toast
-      setIsSuccess(true);
-      
-      // Reset form
-      setFormData({
-        name: '',
-        email: '',
-        company: '',
-        message: ''
+      // Send form data using our utility
+      const result = await sendMail({
+        name: formData.name,
+        email: formData.email,
+        company: formData.company || undefined,
+        message: formData.message || undefined,
+        selectedServices,
+        files: files || undefined,
       });
+      
+      if (result.success) {
+        setIsSuccess(true);
+        setIsSubmitting(false);
+        
+        // Reset form
+        setFormData({
+          name: '',
+          email: '',
+          company: '',
+          message: ''
+        });
+      } else {
+        throw new Error(result.message || 'Failed to send message');
+      }
     } catch (error) {
+      setIsSubmitting(false);
       toast({
         title: "Error submitting form",
-        description: "Please try again later or contact us directly.",
+        description: error instanceof Error ? error.message : "Please try again later or contact us directly.",
         variant: "destructive"
       });
     }
@@ -342,7 +338,7 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             required
             placeholder="Your name"
             className="glass-card bg-white/50"
-            disabled={state.submitting}
+            disabled={isSubmitting}
           />
         </div>
         
@@ -359,7 +355,7 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             required
             placeholder="your.email@example.com"
             className="glass-card bg-white/50"
-            disabled={state.submitting}
+            disabled={isSubmitting}
           />
         </div>
         
@@ -374,23 +370,23 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             onChange={handleChange}
             placeholder="Your company name (optional)"
             className="glass-card bg-white/50"
-            disabled={state.submitting}
+            disabled={isSubmitting}
           />
         </div>
         
         <div>
           <label htmlFor="message" className="block text-sm font-medium mb-2">
-            Tell us about your project 
+            Tell us about your project (optional)
           </label>
           <Textarea
             id="message"
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Describe your idea, goals, and any specific requirements (optional)"
+            placeholder="Describe your idea, goals, and any specific requirements"
             rows={5}
             className="glass-card bg-white/50"
-            disabled={state.submitting}
+            disabled={isSubmitting}
           />
         </div>
         
@@ -399,9 +395,9 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
           variant="primary-gradient" 
           size="lg" 
           className="w-full"
-          disabled={state.submitting}
+          disabled={isSubmitting}
         >
-          {state.submitting ? 'Submitting...' : 'Submit'}
+          {isSubmitting ? 'Submitting...' : 'Submit'}
         </Button>
       </form>
     </div>
