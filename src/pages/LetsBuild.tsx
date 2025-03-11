@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { motion } from 'framer-motion';
-import { Upload, Check, ArrowRight, Mail, Phone, Clock, Plus, X } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { Upload, Check, ArrowRight, Mail, Phone, Clock, Plus, X, Sparkles, Send, CheckCircle2 } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Textarea } from '@/components/ui/textarea';
 import Layout from '@/components/Layout';
 import AnimatedArrow from '@/components/AnimatedArrow';
 import { useToast } from '@/components/ui/use-toast';
+import { useForm } from '@formspree/react';
 
 // Define the available services for selection
 const availableServices = [
@@ -127,6 +128,104 @@ const FileUpload = ({ files, setFiles }) => {
   );
 };
 
+// Success screen component
+const SuccessScreen = ({ onReset }) => {
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 20 }}
+      animate={{ opacity: 1, y: 0 }}
+      className="w-full max-w-2xl mx-auto text-center"
+    >
+      <div className="glass-card p-10 rounded-2xl border border-primary/10 bg-white/80 shadow-lg mb-8">
+        <motion.div 
+          initial={{ scale: 0 }}
+          animate={{ scale: 1 }}
+          transition={{ 
+            type: "spring", 
+            stiffness: 260, 
+            damping: 20,
+            delay: 0.2 
+          }}
+          className="w-20 h-20 rounded-full bg-gradient-to-br from-primary/10 to-primary/30 flex items-center justify-center mx-auto mb-6"
+        >
+          <CheckCircle2 className="h-10 w-10 text-primary" />
+        </motion.div>
+        
+        <motion.div
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <h1 className="text-3xl font-bold mb-3">Message Sent!</h1>
+          <p className="text-muted-foreground mb-6">
+            Thank you for reaching out. We'll get back to you within 24-48 hours.
+          </p>
+        </motion.div>
+        
+        <motion.div
+          className="flex flex-col space-y-3"
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          transition={{ delay: 0.6 }}
+        >
+          <div className="p-3 bg-primary/5 rounded-lg text-sm flex items-center justify-center space-x-2">
+            <Mail className="h-4 w-4 text-primary" />
+            <span>A confirmation has been sent to your email</span>
+          </div>
+          
+          <div className="p-3 bg-primary/5 rounded-lg text-sm flex items-center justify-center space-x-2">
+            <Clock className="h-4 w-4 text-primary" />
+            <span>Our team will review your request shortly</span>
+          </div>
+        </motion.div>
+      </div>
+      
+      <motion.div
+        initial={{ opacity: 0 }}
+        animate={{ opacity: 1 }}
+        transition={{ delay: 0.8 }}
+      >
+        <Button
+          onClick={onReset}
+          variant="outline"
+          className="border-primary/20 hover:border-primary/50 hover:bg-primary/5"
+        >
+          Return to homepage
+        </Button>
+      </motion.div>
+      
+      {/* Decorative elements */}
+      <motion.div 
+        className="absolute top-10 right-10 text-primary opacity-20"
+        animate={{ 
+          rotate: 360,
+          scale: [1, 1.2, 1],
+         }}
+        transition={{ 
+          rotate: { repeat: Infinity, duration: 20, ease: "linear" },
+          scale: { repeat: Infinity, duration: 3, ease: "easeInOut" }
+        }}
+      >
+        <Sparkles className="h-14 w-14" />
+      </motion.div>
+      
+      <motion.div 
+        className="absolute bottom-10 left-10 text-primary opacity-20"
+        animate={{ 
+          rotate: -360,
+          scale: [1, 1.1, 1],
+         }}
+        transition={{ 
+          rotate: { repeat: Infinity, duration: 15, ease: "linear" },
+          scale: { repeat: Infinity, duration: 4, ease: "easeInOut" }
+        }}
+      >
+        <Send className="h-10 w-10" />
+      </motion.div>
+    </motion.div>
+  );
+};
+
 // Contact form component
 const ContactForm = ({ selectedServices, files, goBack }) => {
   const { toast } = useToast();
@@ -136,30 +235,65 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
     company: '',
     message: ''
   });
+  const [isSuccess, setIsSuccess] = useState(false);
+  
+  const [state, handleSubmit] = useForm("mjvdgwzb");
 
   const handleChange = (e) => {
     const { name, value } = e.target;
     setFormData(prev => ({ ...prev, [name]: value }));
   };
 
-  const handleSubmit = (e) => {
+  const onSubmit = async (e) => {
     e.preventDefault();
     
-    // Here you would integrate with your form submission service (e.g., Formspree)
-    // For now, we'll just show a success toast
-    toast({
-      title: "Form submitted successfully!",
-      description: "We'll be in touch with you shortly.",
-    });
+    // Create FormData object to handle files
+    const formDataToSend = new FormData();
     
-    // Reset form
-    setFormData({
-      name: '',
-      email: '',
-      company: '',
-      message: ''
+    // Add form fields
+    formDataToSend.append('name', formData.name);
+    formDataToSend.append('email', formData.email);
+    formDataToSend.append('company', formData.company);
+    formDataToSend.append('message', formData.message);
+    
+    // Add selected services
+    formDataToSend.append('selectedServices', JSON.stringify(selectedServices.map(s => s.title)));
+    
+    // Add files
+    files.forEach((file, index) => {
+      formDataToSend.append(`file${index + 1}`, file);
     });
+
+    try {
+      await handleSubmit(formDataToSend);
+      
+      // Show success screen instead of toast
+      setIsSuccess(true);
+      
+      // Reset form
+      setFormData({
+        name: '',
+        email: '',
+        company: '',
+        message: ''
+      });
+    } catch (error) {
+      toast({
+        title: "Error submitting form",
+        description: "Please try again later or contact us directly.",
+        variant: "destructive"
+      });
+    }
   };
+
+  const handleReset = () => {
+    // Navigate to homepage
+    window.location.href = '/';
+  };
+
+  if (isSuccess) {
+    return <SuccessScreen onReset={handleReset} />;
+  }
 
   return (
     <div className="w-full max-w-2xl mx-auto">
@@ -195,7 +329,7 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
         </div>
       )}
       
-      <form onSubmit={handleSubmit} className="space-y-6 glass-card p-6">
+      <form onSubmit={onSubmit} className="space-y-6 glass-card p-6">
         <div>
           <label htmlFor="name" className="block text-sm font-medium mb-2">
             Name
@@ -208,6 +342,7 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             required
             placeholder="Your name"
             className="glass-card bg-white/50"
+            disabled={state.submitting}
           />
         </div>
         
@@ -224,6 +359,7 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             required
             placeholder="your.email@example.com"
             className="glass-card bg-white/50"
+            disabled={state.submitting}
           />
         </div>
         
@@ -238,26 +374,34 @@ const ContactForm = ({ selectedServices, files, goBack }) => {
             onChange={handleChange}
             placeholder="Your company name (optional)"
             className="glass-card bg-white/50"
+            disabled={state.submitting}
           />
         </div>
         
         <div>
           <label htmlFor="message" className="block text-sm font-medium mb-2">
-            Tell us about your project (optional)
+            Tell us about your project 
           </label>
           <Textarea
             id="message"
             name="message"
             value={formData.message}
             onChange={handleChange}
-            placeholder="Describe your idea, goals, and any specific requirements"
+            placeholder="Describe your idea, goals, and any specific requirements (optional)"
             rows={5}
             className="glass-card bg-white/50"
+            disabled={state.submitting}
           />
         </div>
         
-        <Button type="submit" variant="primary-gradient" size="lg" className="w-full">
-          Submit
+        <Button 
+          type="submit" 
+          variant="primary-gradient" 
+          size="lg" 
+          className="w-full"
+          disabled={state.submitting}
+        >
+          {state.submitting ? 'Submitting...' : 'Submit'}
         </Button>
       </form>
     </div>
