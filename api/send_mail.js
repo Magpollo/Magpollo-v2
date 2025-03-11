@@ -1,9 +1,6 @@
 // Vercel API endpoint for handling form submissions
 import multer from 'multer';
 import nodemailer from 'nodemailer';
-import { renderToStaticMarkup } from 'react-dom/server';
-import React from 'react';
-import FormToEmail from './FormToEmail';
 
 // Configure multer for file uploads
 const upload = multer({
@@ -25,6 +22,67 @@ const runMiddleware = (req, res, fn) => {
     });
   });
 };
+
+// Function to generate email HTML
+function generateEmailHtml(data) {
+  const { name, email, company, message, selectedServices = [], files = [] } = data;
+  
+  // Create list of services
+  const servicesList = selectedServices.length > 0 
+    ? selectedServices.map(s => `<li>${typeof s === 'string' ? s : (s.title || 'Service')}</li>`).join('') 
+    : '<p>No specific services selected.</p>';
+  
+  // Create list of files
+  const filesList = files.length > 0
+    ? files.map(f => `<li>${f.name || f.originalname || 'File'}</li>`).join('')
+    : '';
+  
+  // Build HTML
+  return `
+    <html>
+      <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
+        <h1 style="color: #ef4444; text-align: center;">New Inquiry from Magpollo Website</h1>
+        
+        <div style="margin-bottom: 20px;">
+          <h2>Contact Information</h2>
+          <p><strong>Name:</strong> ${name}</p>
+          <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #ef4444;">${email}</a></p>
+          ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
+        </div>
+        
+        <hr style="border-color: #ddd; margin: 20px 0;" />
+        
+        <div style="margin-bottom: 20px;">
+          <h2>Services Requested</h2>
+          ${servicesList ? `<ul>${servicesList}</ul>` : '<p>No specific services selected.</p>'}
+        </div>
+        
+        ${message ? `
+        <hr style="border-color: #ddd; margin: 20px 0;" />
+        <div style="margin-bottom: 20px;">
+          <h2>Message</h2>
+          <p>${message}</p>
+        </div>
+        ` : ''}
+        
+        ${filesList ? `
+        <hr style="border-color: #ddd; margin: 20px 0;" />
+        <div style="margin-bottom: 20px;">
+          <h2>Attachments</h2>
+          <ul>${filesList}</ul>
+        </div>
+        ` : ''}
+        
+        <hr style="border-color: #ddd; margin: 20px 0;" />
+        
+        <div style="text-align: center; color: #777; font-size: 14px;">
+          <p>&copy; ${new Date().getFullYear()} Magpollo. All rights reserved.</p>
+          <p>This is an automated message from the Magpollo website contact form.</p>
+        </div>
+      </body>
+    </html>
+  `;
+}
 
 export default async function handler(req, res) {
   // Only allow POST method
@@ -59,7 +117,7 @@ export default async function handler(req, res) {
       return res.status(400).json({ message: 'Missing required fields' });
     }
 
-    // Generate HTML email if not provided
+    // Generate or use provided HTML email
     let finalHtml = emailHtml;
     
     if (!finalHtml) {
@@ -81,70 +139,16 @@ export default async function handler(req, res) {
             : [];
         }
         
-        try {
-          // Try to use the imported template
-          finalHtml = renderToStaticMarkup(
-            React.createElement(FormToEmail, {
-              name,
-              email,
-              company,
-              message,
-              selectedServices: servicesArray,
-              files: req.files?.map(file => ({ name: file.originalname }))
-            })
-          );
-        } catch (templateError) {
-          console.error('Error rendering email template, using fallback:', templateError);
-          
-          // Fallback to simple HTML if template fails
-          const servicesList = servicesArray.map(s => `<li>${s.title || s}</li>`).join('');
-          const filesList = req.files ? req.files.map(f => `<li>${f.originalname}</li>`).join('') : '';
-          
-          finalHtml = `
-            <html>
-              <body style="font-family: Arial, sans-serif; line-height: 1.6; color: #333; max-width: 600px; margin: 0 auto; padding: 20px;">
-                <h1 style="color: #ef4444; text-align: center;">New Inquiry from Magpollo Website</h1>
-                
-                <div style="margin-bottom: 20px;">
-                  <h2>Contact Information</h2>
-                  <p><strong>Name:</strong> ${name}</p>
-                  <p><strong>Email:</strong> <a href="mailto:${email}" style="color: #ef4444;">${email}</a></p>
-                  ${company ? `<p><strong>Company:</strong> ${company}</p>` : ''}
-                </div>
-                
-                <hr style="border-color: #ddd; margin: 20px 0;" />
-                
-                <div style="margin-bottom: 20px;">
-                  <h2>Services Requested</h2>
-                  ${servicesList ? `<ul>${servicesList}</ul>` : '<p>No specific services selected.</p>'}
-                </div>
-                
-                ${message ? `
-                <hr style="border-color: #ddd; margin: 20px 0;" />
-                <div style="margin-bottom: 20px;">
-                  <h2>Message</h2>
-                  <p>${message}</p>
-                </div>
-                ` : ''}
-                
-                ${filesList ? `
-                <hr style="border-color: #ddd; margin: 20px 0;" />
-                <div style="margin-bottom: 20px;">
-                  <h2>Attachments</h2>
-                  <ul>${filesList}</ul>
-                </div>
-                ` : ''}
-                
-                <hr style="border-color: #ddd; margin: 20px 0;" />
-                
-                <div style="text-align: center; color: #777; font-size: 14px;">
-                  <p>&copy; ${new Date().getFullYear()} Magpollo. All rights reserved.</p>
-                  <p>This is an automated message from the Magpollo website contact form.</p>
-                </div>
-              </body>
-            </html>
-          `;
-        }
+        // Generate email HTML directly - no imports
+        finalHtml = generateEmailHtml({
+          name,
+          email,
+          company, 
+          message,
+          selectedServices: servicesArray,
+          files: req.files || []
+        });
+        
       } catch (e) {
         console.error('Error generating email HTML:', e);
         
@@ -160,11 +164,11 @@ export default async function handler(req, res) {
       }
     }
 
-    // Setup email transporter
+    // Setup email transporter using SendInBlue/Brevo
     const transporter = nodemailer.createTransport({
       host: process.env.SMTP_HOST || 'smtp-relay.brevo.com',
       port: parseInt(process.env.SMTP_PORT || '587'),
-      secure: false,
+      secure: false, // true for 465, false for other ports
       auth: {
         user: process.env.SENDINBLUE_USER || process.env.SMTP_USER,
         pass: process.env.SENDINBLUE_PASS || process.env.SMTP_PASSWORD,
